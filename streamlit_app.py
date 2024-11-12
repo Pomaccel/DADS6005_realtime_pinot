@@ -7,8 +7,12 @@ from datetime import datetime
 
 st.set_page_config(page_title="Gundam Views Dashboard", layout="wide")
 
+# Function to get the current time (for auto-refreshing)
+def get_current_time():
+    return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
 # Display the current time in the top right corner
-current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+current_time = get_current_time()
 
 st.markdown(
     f"""
@@ -18,10 +22,13 @@ st.markdown(
     """, unsafe_allow_html=True
 )
 
+# Title and introductory text
 st.title("🎈 Gundam Views Dashboard")
 st.write(
     "Explore the data visualizations below to see insights on Gundam views and trends over time."
 )
+
+
 
 # Add some space between the title and the charts
 st.markdown("<hr>", unsafe_allow_html=True)
@@ -177,4 +184,10 @@ with col4:
 # Add a footer or additional content
 st.markdown("<hr>", unsafe_allow_html=True)
 st.write("Data sourced from the Gundam database.")
-st.write(f"len(df4)")
+
+# Display the lengths of the dataframes
+st.markdown(f"**Data Frame Sizes**: ")
+st.markdown(f"📊 df_result1 (Gundam Views by Name): **{len(df_result1)}** rows")
+st.markdown(f"📊 df2 (Total Views by Gender Over Time): **{len(df2)}** rows")
+st.markdown(f"📊 df3 (Gundam Views Count by Grade & Gundam Name): **{len(df3)}** rows")
+st.markdown(f"📊 df4 (Gender Type by Grade): **{len(df4)}** rows")
