@@ -53,7 +53,8 @@ curs1 = conn.cursor()
 query1 = """
 SELECT GUNDAM_NAME, count(TOTAL_VIEWS) AS TOTAL_VIEW
 FROM TP6_tumbling
-GROUP BY GUNDAM_NAME;
+GROUP BY GUNDAM_NAME
+limit 100000;
 """
 curs1.execute(query1)
 result1 = curs1.fetchall()
@@ -86,7 +87,9 @@ SELECT
 FROM 
     TP7_hopping
 GROUP BY 
-    GENDER, WINDOW_START_STR, WINDOW_END_STR;
+    GENDER, WINDOW_START_STR, WINDOW_END_STR
+limit 100000;
+
 """
 curs2.execute(query2)
 result2 = curs2.fetchall()
@@ -116,7 +119,8 @@ FROM
     TP7_hopping
 GROUP BY 
     GRADE, 
-    GUNDAM_NAME;
+    GUNDAM_NAME
+    limit 100000;
 """
 curs3.execute(query3)
 result3 = curs3.fetchall()
@@ -142,7 +146,8 @@ SELECT
 FROM 
     TP7_hopping
 GROUP BY 
-    GRADE;
+    GRADE
+limit 100000;
 """
 
 curs4.execute(query4)
