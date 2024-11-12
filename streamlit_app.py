@@ -2,9 +2,21 @@ import streamlit as st
 import pandas as pd 
 from pinotdb import connect
 import plotly.express as px
+import time  # To control the refresh interval
 from datetime import datetime
 
 st.set_page_config(page_title="Gundam Views Dashboard", layout="wide")
+
+# Display the current time in the top right corner
+current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+st.markdown(
+    f"""
+    <div style="position: absolute; top: 10px; right: 10px; font-size: 16px; font-weight: bold; color: #333;">
+        {current_time}
+    </div>
+    """, unsafe_allow_html=True
+)
 
 st.title("🎈 Gundam Views Dashboard")
 st.write(
@@ -13,6 +25,18 @@ st.write(
 
 # Add some space between the title and the charts
 st.markdown("<hr>", unsafe_allow_html=True)
+
+# Refresh interval in seconds
+refresh_interval = 5  # Change this value to set the auto-refresh interval
+
+# Track the last refresh time using session state
+if 'last_refresh' not in st.session_state:
+    st.session_state.last_refresh = time.time()
+
+# Check if it's time to refresh
+if time.time() - st.session_state.last_refresh > refresh_interval:
+    st.session_state.last_refresh = time.time()  # Update the last refresh time
+    st.experimental_rerun()  # Trigger a rerun of the app
 
 # Connect to the database
 conn = connect(host='47.129.185.188', port=8099, path='/query/sql', schema='http')
@@ -153,4 +177,3 @@ with col4:
 # Add a footer or additional content
 st.markdown("<hr>", unsafe_allow_html=True)
 st.write("Data sourced from the Gundam database.")
-
