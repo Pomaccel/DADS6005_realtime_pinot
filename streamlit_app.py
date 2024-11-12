@@ -177,3 +177,4 @@ with col4:
 # Add a footer or additional content
 st.markdown("<hr>", unsafe_allow_html=True)
 st.write("Data sourced from the Gundam database.")
+st.write(f"len(df4)")
