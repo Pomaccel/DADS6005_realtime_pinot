@@ -17,21 +17,16 @@ st.markdown("<hr>", unsafe_allow_html=True)
 # Connect to the database
 conn = connect(host='47.129.185.188', port=8099, path='/query/sql', schema='http')
 
-# Function to fetch and process data
-@st.cache_data(ttl=600)  # Cache data for 10 minutes to simulate "real-time" updates
-def get_data(query):
-    curs = conn.cursor()
-    curs.execute(query)
-    result = curs.fetchall()
-    return pd.DataFrame(result)
-
 # Query data 
+curs1 = conn.cursor()
 query1 = """
 SELECT GUNDAM_NAME, count(TOTAL_VIEWS) AS TOTAL_VIEW
 FROM TP6_tumbling
 GROUP BY GUNDAM_NAME;
 """
-df_result1 = get_data(query1)
+curs1.execute(query1)
+result1 = curs1.fetchall()
+df_result1 = pd.DataFrame(result1, columns=['GUNDAM_NAME', 'TOTAL_VIEW'])
 
 # First plot
 fig1 = px.bar(df_result1, 
@@ -50,6 +45,7 @@ fig1.update_layout(
 )
 
 # Query data for the second chart
+curs2 = conn.cursor()
 query2 = """
 SELECT 
     GENDER,
@@ -61,7 +57,9 @@ FROM
 GROUP BY 
     GENDER, WINDOW_START_STR, WINDOW_END_STR;
 """
-df2 = get_data(query2)
+curs2.execute(query2)
+result2 = curs2.fetchall()
+df2 = pd.DataFrame(result2, columns=['GENDER', 'TOTAL_VIEW','WINDOW_START_STR','WINDOW_END_STR'])
 
 df2["WINDOW_START"] = pd.to_datetime(df2["WINDOW_START_STR"])
 df2["WINDOW_END"] = pd.to_datetime(df2["WINDOW_END_STR"])
@@ -77,6 +75,7 @@ fig2 = px.bar(
 )
 
 # Query data for the third chart
+curs3 = conn.cursor()
 query3 = """
 SELECT 
     GRADE, 
@@ -88,7 +87,9 @@ GROUP BY
     GRADE, 
     GUNDAM_NAME;
 """
-df3 = get_data(query3)
+curs3.execute(query3)
+result3 = curs3.fetchall()
+df3 = pd.DataFrame(result3, columns=['GRADE', 'GUNDAM_NAME','GUNDAM_NAME_COUNT'])
 
 # Third plot
 fig3 = px.bar(
@@ -102,6 +103,7 @@ fig3 = px.bar(
 )
 
 # Query data for the fourth chart
+curs4 = conn.cursor()
 query4 = """
 SELECT 
     GRADE, 
@@ -111,7 +113,10 @@ FROM
 GROUP BY 
     GRADE;
 """
-df4 = get_data(query4)
+
+curs4.execute(query4)
+result4 = curs4.fetchall()
+df4 = pd.DataFrame(result4, columns=['GRADE', 'GENDER_Type'])
 
 # Fourth plot
 fig4 = px.bar(df4,
@@ -149,6 +154,3 @@ with col4:
 st.markdown("<hr>", unsafe_allow_html=True)
 st.write("Data sourced from the Gundam database.")
 
-# Add a manual refresh button
-if st.button('Refresh Data'):
-    st.experimental_rerun()  # Triggers the page to refresh and load new data
