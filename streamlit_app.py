@@ -6,7 +6,8 @@ from datetime import datetime
 import time
 
 st.set_page_config(page_title="Gundam Views Dashboard", layout="wide")
-st.header("Real-Time Page Visit Tracking Dashboard")
+st.title("📊 DADS6005 Realtime Dashboard : Mobile Suit Gundam")
+st.header("Explore the data visualizations below to see insights on Mobile Suit Gundam and trends over time.")
 
 # Connect to Pinot database
 conn = connect(host='54.255.188.63', port=8099, path='/query/sql', schema='http')
