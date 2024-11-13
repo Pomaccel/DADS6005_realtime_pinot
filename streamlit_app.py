@@ -58,6 +58,13 @@ with col3:
 grade_filter = "'" + "', '".join(selected_grade) + "'"
 gender_filter = "'" + "', '".join(selected_genders) + "'"
 
+gender_color_map = {
+    'MALE': 'blue', 
+    'FEMALE': 'pink',
+    'OTHER': 'yellow'
+}
+
+
 # Query 1: Top 10 Gundam Popular
 query1 = f"""
 SELECT
@@ -85,14 +92,20 @@ col3, col4 = st.columns(2)
 # Plot the first graph in the first column
 with col3:
     # Create a horizontal bar chart
-    fig1 = go.Figure(go.Bar(
-        x=df1['visitor'], 
-        y=df1['GUNDAM_NAME'], 
-        orientation='h',
-        marker=dict(color=df1['GENDER'].map({'Male': 'blue', 'Female': 'pink'})),
-        text=df1['visitor'],
-        textposition='outside',
-    ))
+    fig1 = go.Figure()
+
+    # Add traces for each gender
+    for gender in df1['GENDER'].unique():
+        gender_data = df1[df1['GENDER'] == gender]
+        fig1.add_trace(go.Bar(
+            x=gender_data['visitor'], 
+            y=gender_data['GUNDAM_NAME'],
+            name=gender,
+            text=gender_data['visitor'],
+            textposition='outside',
+            marker=dict(color=gender_color_map[gender]),  # Apply color map
+            hoverinfo='x+y',
+        ))
 
     # Update the layout
     fig1.update_layout(
@@ -100,6 +113,9 @@ with col3:
         plot_bgcolor='rgba(0, 0, 0, 0)', 
         xaxis_title="Total Visits",             
         yaxis_title=None,
+        xaxis=dict(showgrid=False),       
+        yaxis=dict(showgrid=False),
+        barmode='stack',  # Change to 'group' or 'stack' depending on preference
         hovermode='closest'
     )
     st.header("🤖 Gundam Views by Name")
@@ -149,13 +165,16 @@ with col4:
 # Create a bar chart using graph_objects
     fig2 = go.Figure()
 
-# Add traces for each gender
+    # Add traces for each gender
     for gender in result['GENDER'].unique():
         gender_data = result[result['GENDER'] == gender]
         fig2.add_trace(go.Bar(
             x=gender_data['TimePeriod'], 
             y=gender_data['TOTAL_VIEW'],
             name=gender,
+            text=gender_data['TOTAL_VIEW'],
+            textposition='outside',
+            marker=dict(color=gender_color_map[gender]),  # Apply color map
             hoverinfo='x+y',
         ))
 
@@ -167,7 +186,7 @@ with col4:
         yaxis_title="Number of Visitors", 
         xaxis=dict(showgrid=False),       
         yaxis=dict(showgrid=False),
-        barmode='stack',  # Change to 'group' or 'stack' depending on preference
+        barmode='stack', 
         hovermode='closest'
     )
 
@@ -212,7 +231,8 @@ with col5:
             name=gender,
             text=gender_data['VISITOR'],
             textposition='outside',
-            hoverinfo='x+y',  # Show both x (GRADE) and y (VISITOR) on hover
+            marker=dict(color=gender_color_map[gender]),  # Apply color map
+            hoverinfo='x+y',
         ))
 
     # Update the layout
@@ -223,7 +243,7 @@ with col5:
         yaxis_title=None, 
         xaxis=dict(showgrid=False),       
         yaxis=dict(showgrid=False),
-        barmode='group',  # Use 'group' to display bars side by side
+        barmode='group', 
         hovermode='closest'
     )
     st.header("⭐ Gundam Views by Grade")
@@ -260,10 +280,10 @@ with col6:
             y=gender_data['AVG_SESSION_LENGTH_MIN'],
             name=gender,
             text=gender_data['AVG_SESSION_LENGTH_MIN'],
-            textposition='inside',  # Position the text inside the bars
-            hoverinfo='x+y+text',   # Display x, y values and text (TOTAL_VISITOR)
-            marker=dict(color=gender_data['GENDER'].map({'Male': 'blue', 'Female': 'pink'})),  # Color by gender
-            hovertemplate='<b>Gender:</b> %{x}<br><b>Avg. Session Length:</b> %{y} minutes<br><b>Total Visitors:</b> %{text}'  # Custom hover template
+            textposition='inside',
+            marker=dict(color=gender_color_map[gender]),  # Apply color map
+            hoverinfo='x+y+text', 
+            hovertemplate='<b>Gender:</b> %{x}<br><b>Avg. Session Length:</b> %{y} minutes<br><b>Total Visitors:</b> %{text}'
         ))
 
     # Update the layout
@@ -271,10 +291,10 @@ with col6:
         title="Session Length vs Total Visitors by Gender", 
         plot_bgcolor='rgba(0, 0, 0, 0)', 
         xaxis_title="Time Period", 
-        yaxis_title="Average Session Length (min)",  # Y-axis title correction
+        yaxis_title="Average Session Length (min)", 
         xaxis=dict(showgrid=False),       
         yaxis=dict(showgrid=False),
-        hovermode='closest'  # Show hover data for the closest bar
+        hovermode='closest'  
     )
     st.header("⚧ Gender Type by Grade")
     st.plotly_chart(fig4, use_container_width=True)
