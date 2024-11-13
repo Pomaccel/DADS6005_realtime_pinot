@@ -94,17 +94,17 @@ with col3:
     # Create a horizontal bar chart
     fig1 = go.Figure()
 
-    # Add traces for each gender
     for gender in df1['GENDER'].unique():
         gender_data = df1[df1['GENDER'] == gender]
         fig1.add_trace(go.Bar(
-            x=gender_data['visitor'], 
-            y=gender_data['GUNDAM_NAME'],
+            x=gender_data['visitor'],  # Total Visits on the x-axis
+            y=gender_data['GUNDAM_NAME'],  # Gundam Name on the y-axis
             name=gender,
             text=gender_data['visitor'],
-            textposition='outside',
+            textposition='outside',  # Position the text outside the bars
             marker=dict(color=gender_color_map[gender]),  # Apply color map
             hoverinfo='x+y',
+            orientation='h'  # Set bar chart orientation to horizontal
         ))
 
     # Update the layout
@@ -112,10 +112,10 @@ with col3:
         title="Number of Visitor by each Gundam model", 
         plot_bgcolor='rgba(0, 0, 0, 0)', 
         xaxis_title="Total Visits",             
-        yaxis_title=None,
+        yaxis_title=None,  # Keep y-axis title as None (empty)
         xaxis=dict(showgrid=False),       
         yaxis=dict(showgrid=False),
-        barmode='stack',  # Change to 'group' or 'stack' depending on preference
+        barmode='stack',  # Use 'stack' for stacked bars or 'group' for grouped bars
         hovermode='closest'
     )
     st.header("🤖 Gundam Views by Name")
