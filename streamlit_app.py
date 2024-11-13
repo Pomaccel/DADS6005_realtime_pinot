@@ -61,7 +61,7 @@ GROUP BY
     GUNDAM_NAME
 ORDER BY 
     visitor DESC
-LIMIT 500;
+LIMIT 50000000000;
 
 """
 curs.execute(query1)
@@ -103,7 +103,7 @@ FROM
     TP7_hopping
 GROUP BY
     GENDER, WINDOW_START_STR, WINDOW_END_STR
-LIMIT 20000 ;
+LIMIT 50000000000;
 """
 curs.execute(query2)
 df2 = pd.DataFrame(curs, columns=[item[0] for item in curs.description])
@@ -164,7 +164,7 @@ FROM
 GROUP BY
     GRADE, GENDER
 
-LIMIT 10000 ;
+LIMIT 50000000000;
 """
 curs.execute(query3)
 df_summary3 = pd.DataFrame(curs, columns=[item[0] for item in curs.description])
@@ -205,7 +205,7 @@ FROM
     TP8_session
 GROUP BY 
     GENDER
-LIMIT 1000000;
+LIMIT 50000000000;
 """
 
 curs.execute(query4)
