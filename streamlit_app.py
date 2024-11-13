@@ -4,7 +4,7 @@ from pinotdb import connect
 import plotly.express as px
 from datetime import datetime
 import time
-# Code
+
 
 st.set_page_config(page_title="Gundam Views Dashboard", layout="wide")
 st.title("📊 DADS6005 Realtime Dashboard : Mobile Suit Gundam")
@@ -30,7 +30,6 @@ st.session_state.auto_refresh = auto_refresh
 
 
 ## Create an Interative Filter 
-
 col1, col2, col3 = st.columns(3)
 
 ## Create an Interactive Filter for Gundam Grade 
