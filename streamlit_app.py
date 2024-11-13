@@ -62,8 +62,6 @@ gender_color_map = {
     'Other': 'green',
 }
 
-# Specify the desired order of categories in the legend
-gender_order = ['Male', 'Female', 'Other']  # Adjust this order as needed
 
 # Query 1: Top 10 Gundam Popular
 query1 = f"""
@@ -99,14 +97,13 @@ with col3:
                   color='GENDER',
                   hover_data={'visitor': True},
                   color_discrete_map=gender_color_map,
-                  category_orders={'GENDER': gender_order})
+                  )
     
     fig1.update_traces(textposition='outside')
     fig1.update_layout(
         plot_bgcolor='rgba(0, 0, 0, 0)', 
         xaxis_title="Total Visits",             
-        yaxis_title=None,
-        traceorder='normal'
+        yaxis_title=None
     )
     st.header("🤖 Gundam Views by Name")
     st.plotly_chart(fig1, use_container_width=True)
@@ -160,7 +157,7 @@ with col4:
                    color='GENDER', 
                    barmode='group',
                    color_discrete_map=gender_color_map,
-                   category_orders={'GENDER': gender_order})
+                   )
     
     fig2.update_layout(
         plot_bgcolor='rgba(0, 0, 0, 0)', 
@@ -168,8 +165,7 @@ with col4:
         yaxis_title="Number of Visitors",       # Corrected axis title
         xaxis=dict(showgrid=False),       
         yaxis=dict(showgrid=False),
-        barmode='stack',
-        traceorder='normal'
+        barmode='stack'
     )
     st.header("👨‍👨‍👧‍👧 Total Views by Gender Over Time")
     st.plotly_chart(fig2, use_container_width=True)
@@ -208,7 +204,7 @@ with col5:
                   color='GENDER', 
                   barmode='group',
                   color_discrete_map=gender_color_map,
-                  category_orders={'GENDER': gender_order})
+                  )
     
     fig3.update_traces(textposition='outside')
     fig3.update_layout(
@@ -216,8 +212,7 @@ with col5:
         xaxis_title="Time Period",             
         yaxis_title=None,  
         xaxis=dict(showgrid=False),       
-        yaxis=dict(showgrid=False),
-        traceorder='normal'                        
+        yaxis=dict(showgrid=False)                        
     )
     st.header("⭐ Gundam Views by Grade")
     st.plotly_chart(fig3, use_container_width=True)
@@ -250,7 +245,7 @@ with col6:
                 color='GENDER',
                 hover_data=["TOTAL_VISITOR"],
                 color_discrete_map=gender_color_map,
-                category_orders={'GENDER': gender_order})  # Add TOTAL_VISITOR to hover data
+                )  # Add TOTAL_VISITOR to hover data
 
     # Update traces to position text appropriately (e.g., 'inside' for text inside the bars)
     fig4.update_traces(textposition='inside',traceorder='normal')
@@ -261,8 +256,7 @@ with col6:
         xaxis_title="Time Period",
         yaxis_title=None,
         xaxis=dict(showgrid=False),
-        yaxis=dict(showgrid=False),
-        traceorder='normal'
+        yaxis=dict(showgrid=False)
     )
     st.header("⚧ Gender Type by Grade")
     st.plotly_chart(fig4, use_container_width=True)
