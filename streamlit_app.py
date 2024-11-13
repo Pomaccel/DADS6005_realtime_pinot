@@ -95,6 +95,9 @@ with col3:
     # Create a horizontal bar chart
     fig1 = go.Figure()
 
+    # Sort df1 by visitor values in descending order
+    df1 = df1.sort_values(by='visitor', ascending=False)
+
     for gender in df1['GENDER'].unique():
         gender_data = df1[df1['GENDER'] == gender]
         fig1.add_trace(go.Bar(
@@ -110,7 +113,7 @@ with col3:
 
     # Update the layout
     fig1.update_layout(
-        title="Number of Visitor by each Gundam model", 
+        title="Number of Visitors by each Gundam model", 
         plot_bgcolor='rgba(0, 0, 0, 0)', 
         xaxis_title="Total Visits",             
         yaxis_title=None,  # Keep y-axis title as None (empty)
