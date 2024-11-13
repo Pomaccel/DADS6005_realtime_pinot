@@ -1,170 +1,175 @@
+import pandas as pd
 import streamlit as st
-import pandas as pd 
 from pinotdb import connect
 import plotly.express as px
-import time
 from datetime import datetime
-import pytz
+import time
 
-st.set_page_config(page_title="Gundam Views Dashboard", layout="wide")
+st.set_page_config(layout="wide")
+st.header("Real-Time Page Visit Tracking Dashboard")
 
-# Function to get the current time (for auto-refreshing)
-def display_bangkok_time():
-    bangkok_tz = pytz.timezone('Asia/Bangkok')
-    bangkok_time = datetime.now(bangkok_tz).strftime('%Y-%m-%d %H:%M:%S')
-    return bangkok_time
+# Connect to Pinot
+conn = connect(host='13.212.27.220', port=8099, path='/query/sql', scheme='http')
 
-# Display the current time in the top right corner
-current_time = display_bangkok_time()
+# Display last update time
+now = datetime.now()
+dt_string = now.strftime("%d %B %Y %H:%M:%S")
+st.write(f"Last update: {dt_string}")
 
-st.markdown(
-    f"""
-    <div style="position: absolute; top: 10px; right: 10px; font-size: 16px; font-weight: bold; color: #333;">
-        {current_time}
-    </div>
-    """, unsafe_allow_html=True
-)
+# Set up auto-refresh options
+if "sleep_time" not in st.session_state:
+    st.session_state.sleep_time = 2
+if "auto_refresh" not in st.session_state:
+    st.session_state.auto_refresh = True
 
-# Title and introductory text
-st.title("🎈 Gundam Views Dashboard")
-st.write("Explore the data visualizations below to see insights on Gundam views and trends over time.")
+auto_refresh = st.checkbox('Auto Refresh?', st.session_state.auto_refresh)
+st.session_state.auto_refresh = auto_refresh
 
-# Add some space between the title and the charts
-st.markdown("<hr>", unsafe_allow_html=True)
+if auto_refresh:
+    refresh_rate = st.number_input('Refresh rate in seconds', value=st.session_state.sleep_time, min_value=1)
+    st.session_state.sleep_time = refresh_rate
+else:
+    refresh_rate = st.session_state.sleep_time
 
-# Refresh interval in seconds
-refresh_interval = 5  # Change this value to set the auto-refresh interval
+curs = conn.cursor()
+curs.execute("SELECT DISTINCT CATEGORY FROM Consolidate")
+categories = [row[0] for row in curs]
+selected_categories = st.multiselect("Select Categories:", categories, default=categories)
 
-# Track the last refresh time using session state
-if 'last_refresh' not in st.session_state:
-    st.session_state.last_refresh = time.time()
+curs.execute("SELECT DISTINCT GENDER FROM Consolidate")
+genders = [row[0] for row in curs]
+selected_genders = st.multiselect("Select Genders:", genders, default=genders)
 
-# Check if it's time to refresh
-if time.time() - st.session_state.last_refresh > refresh_interval:
-    st.session_state.last_refresh = time.time()  # Update the last refresh time
-    st.experimental_rerun()  # Trigger a rerun of the app
+category_filter = "'" + "', '".join(selected_categories) + "'"
+gender_filter = "'" + "', '".join(selected_genders) + "'"
 
-# Connect to the database
-conn = connect(host='54.255.188.63', port=8099, path='/query/sql', schema='http')
-
-# Query and plot
-def execute_query(query):
-    try:
-        curs = conn.cursor()
-        curs.execute(query)
-        result = curs.fetchall()
-        return result
-    except Exception as e:
-        st.error(f"Error executing query: {e}")
-        return []
-
-# Query data for the first chart
-query1 = """
-SELECT GUNDAM_NAME, count(TOTAL_VIEWS) AS TOTAL_VIEW
-FROM TP6_tumbling
-GROUP BY GUNDAM_NAME
-LIMIT 1000000;
+# Query 1: Page visits by category
+query1 = f"""
+SELECT CATEGORY, COUNT(USERID) as PageViews
+FROM Consolidate 
+WHERE CATEGORY IN ({category_filter}) AND GENDER IN ({gender_filter})
+GROUP BY CATEGORY
+LIMIT 200
 """
-result1 = execute_query(query1)
-df_result1 = pd.DataFrame(result1, columns=['GUNDAM_NAME', 'TOTAL_VIEW'])
+curs.execute(query1)
+df_summary = pd.DataFrame(curs, columns=[item[0] for item in curs.description])
+df_summary = df_summary.sort_values(by="PageViews", ascending=False)
 
-# First plot
-fig1 = px.bar(df_result1, 
-              x='TOTAL_VIEW', 
-              y='GUNDAM_NAME', 
-              color='TOTAL_VIEW', 
-              orientation='h', 
-              title="Gundam Views by Name", 
-              text='TOTAL_VIEW')
-
-# Query data for second chart
-query2 = """
-SELECT GENDER, count(GENDER) AS TOTAL_VIEW, WINDOW_START_STR, WINDOW_END_STR
-FROM TP7_hopping
-GROUP BY GENDER, WINDOW_START_STR, WINDOW_END_STR
-LIMIT 1000;
-"""
-result2 = execute_query(query2)
-df2 = pd.DataFrame(result2, columns=['GENDER', 'TOTAL_VIEW', 'WINDOW_START_STR', 'WINDOW_END_STR'])
-
-df2["WINDOW_START"] = pd.to_datetime(df2["WINDOW_START_STR"])
-df2["WINDOW_END"] = pd.to_datetime(df2["WINDOW_END_STR"])
-
-# Second plot
-fig2 = px.bar(df2, 
-              x="WINDOW_START", 
-              y="TOTAL_VIEW", 
-              color="GENDER", 
-              title="Total Views by Gender Over Different Time Windows")
-
-# Query data for third chart
-query3 = """
-SELECT GRADE, GUNDAM_NAME, COUNT(GUNDAM_NAME) AS GUNDAM_NAME_COUNT
-FROM TP7_hopping
-GROUP BY GRADE, GUNDAM_NAME
-LIMIT 1000000;
-"""
-result3 = execute_query(query3)
-df3 = pd.DataFrame(result3, columns=['GRADE', 'GUNDAM_NAME', 'GUNDAM_NAME_COUNT'])
-
-# Third plot
-fig3 = px.bar(df3, 
-              x="GUNDAM_NAME_COUNT", 
-              y="GUNDAM_NAME", 
-              color="GRADE", 
-              title="Gundam Views Count by Grade and Gundam Name", 
-              text='GUNDAM_NAME_COUNT')
-
-# Query data for fourth chart
-query4 = """
-SELECT GRADE, COUNT(GENDER) AS Gender_Type
-FROM TP7_hopping
-GROUP BY GRADE
-LIMIT 1000000;
-"""
-result4 = execute_query(query4)
-df4 = pd.DataFrame(result4, columns=['GRADE', 'GENDER_Type'])
-
-# Fourth plot
-fig4 = px.bar(df4, 
-              x='GRADE', 
-              y='GENDER_Type', 
-              color='GENDER_Type', 
-              title='Gender Type by Grade')
-
-# Layout
+# Create the first column layout
 col1, col2 = st.columns(2)
 
+# Plot the first graph in the first column
 with col1:
-    st.header("🔹 Gundam Views by Name")
-    st.plotly_chart(fig1, use_container_width=True)
+    fig1 = px.bar(df_summary, x="PageViews", y="CATEGORY", title="Page Visits by Categories", orientation='h', color='CATEGORY', text_auto=True)
+    fig1.update_traces(textposition='outside')
+    fig1.update_layout(
+        plot_bgcolor='rgba(0, 0, 0, 0)', 
+        xaxis_title="Total Visits",             
+        yaxis_title=None
+    )
+    st.plotly_chart(fig1)
+
+# Query 2: Categories interested by gender (%)
+query2 = f"""
+SELECT GENDER, CATEGORY, COUNT(USERID) as PageViews
+FROM Consolidate 
+WHERE CATEGORY IN ({category_filter}) AND GENDER IN ({gender_filter})
+GROUP BY GENDER, CATEGORY 
+LIMIT 200
+"""
+curs.execute(query2)
+df_summary2 = pd.DataFrame(curs, columns=[item[0] for item in curs.description])
+df_summary2['GENDER'] = df_summary2['GENDER'].str.title()
+df_summary2['Percentage'] = df_summary2.groupby('CATEGORY')['PageViews'].transform(lambda x: (x / x.sum()) * 100)
+df_summary2['Percentage_Text'] = df_summary2['Percentage'].map(lambda x: f"{x:.2f}%")
 
 with col2:
-    st.header("🔹 Total Views by Gender Over Time")
-    st.plotly_chart(fig2, use_container_width=True)
+    fig2 = px.bar(df_summary2, x="CATEGORY", y="Percentage", title="Categories Interested by Gender (%)", color='GENDER', text='Percentage_Text')
+    fig2.update_layout(
+        plot_bgcolor='rgba(0, 0, 0, 0)', 
+        xaxis_title=None,             
+        yaxis_title="Percentage (%)",  
+        xaxis=dict(showgrid=False),       
+        yaxis=dict(showgrid=False),
+        barmode='stack'
+    )
+    st.plotly_chart(fig2)
 
-st.markdown("<br>", unsafe_allow_html=True)
-
+# Second row with two more columns
 col3, col4 = st.columns(2)
 
+# Query 3: Tracking page visits by category over time
+query3 = f"""
+SELECT PAGEID2, CATEGORY2, MAX(VIEW_COUNT), WINDOW_START, WINDOW_END
+FROM pagevisit1m
+WHERE CATEGORY2 IN ({category_filter})
+GROUP BY PAGEID2, WINDOW_START, WINDOW_END, CATEGORY2
+LIMIT 10000
+"""
+curs.execute(query3)
+df_summary3 = pd.DataFrame(curs, columns=[item[0] for item in curs.description])
+result = df_summary3.groupby(['WINDOW_START','WINDOW_END','CATEGORY2'])['max(VIEW_COUNT)'].sum().reset_index()
+result = result.sort_values(by=["WINDOW_START","CATEGORY2"], ascending=[True,True])
+result['WINDOW_START'] = pd.to_datetime(result['WINDOW_START'], unit='ms').dt.tz_localize('UTC').dt.tz_convert('Asia/Bangkok')
+result['WINDOW_END'] = pd.to_datetime(result['WINDOW_END'], unit='ms').dt.tz_localize('UTC').dt.tz_convert('Asia/Bangkok')
+result['TimePeriod'] = result['WINDOW_START'].dt.strftime('%Y-%m-%d %H:%M:%S').astype(str) + ' - ' + result['WINDOW_END'].dt.strftime('%H:%M:%S').astype(str)
+result = result.rename(columns={'max(VIEW_COUNT)': 'Views','CATEGORY2':'Category'})
+unique_timeperiods = result['TimePeriod'].unique()
+timeperiods_last_5 = unique_timeperiods[-5:]
+result = result[result['TimePeriod'].isin(timeperiods_last_5)]
+
 with col3:
-    st.header("🔹 Gundam Views by Grade & Name")
-    st.plotly_chart(fig3, use_container_width=True)
+    fig3 = px.bar(result, x="TimePeriod", y="Views", title="Tracking Page Visits Every 1 Minute by Category", text_auto=True, color='Category', barmode='group')
+    fig3.update_traces(textposition='outside')
+    fig3.update_layout(
+        plot_bgcolor='rgba(0, 0, 0, 0)', 
+        xaxis_title="Time Period",             
+        yaxis_title=None,  
+        xaxis=dict(showgrid=False),       
+        yaxis=dict(showgrid=False)                        
+    )
+    st.plotly_chart(fig3)
+
+# Query 4: Average visitor per session by gender
+query4 = f"""
+SELECT * FROM pageveiwpersession
+WHERE CATEGORY2 IN ({category_filter}) AND GENDER2 IN ({gender_filter})
+LIMIT 1000000
+"""
+curs.execute(query4)
+df_summary4 = pd.DataFrame(curs, columns=[item[0] for item in curs.description])
+
+df_grouped = df_summary4.groupby(
+    ['SESSION_START_TS', 'GENDER2', 'CATEGORY2'], as_index=False
+)['PAGEVISIT_COUNT'].max()
+
+df_grouped = df_grouped.rename(columns={
+    'CATEGORY2': 'Category',
+    'GENDER2': 'Gender',
+    'SESSION_START_TS': 'Session',
+    'PAGEVISIT_COUNT': 'Number of Visitor'
+})
+
+df_avg = df_grouped.groupby(['Category', 'Gender']).agg(
+    Average_Visitors_Per_Session=('Number of Visitor', 'mean')
+).reset_index()
+
+df_avg['Percentage_Text'] = df_avg['Average_Visitors_Per_Session'].map(lambda x: f"{x:.2f}")
 
 with col4:
-    st.header("🔹 Gender Type by Grade")
-    st.plotly_chart(fig4, use_container_width=True)
+    fig4 = px.bar(df_avg, x="Category", y="Average_Visitors_Per_Session", title="Average Visitor per 5 seconds session by Gender", text='Percentage_Text', color='Gender', barmode='group')
+    fig4.update_traces(textposition='outside')
+    fig4.update_layout(
+        plot_bgcolor='rgba(0, 0, 0, 0)', 
+        xaxis_title=None,             
+        yaxis_title=None,  
+        xaxis=dict(showgrid=False),       
+        yaxis=dict(showgrid=False)                        
+    )
+    st.plotly_chart(fig4)
 
-# Add a footer or additional content
-st.markdown("<hr>", unsafe_allow_html=True)
-st.write("Data sourced from the Gundam database.")
 
-# Display the lengths of the dataframes
-st.markdown(f"**Data Frame Sizes**: ")
-st.markdown(f"📊 df_result1 (Gundam Views by Name): **{len(df_result1)}** rows")
-st.markdown(f"📊 df2 (Total Views by Gender Over Time): **{len(df2)}** rows")
-st.markdown(f"📊 df3 (Gundam Views Count by Grade & Gundam Name): **{len(df3)}** rows")
-st.markdown(f"📊 df4 (Gender Type by Grade): **{len(df4)}** rows")
-
-# Closing the connection after all queries
-conn.close()
+# Refresh logic
+if auto_refresh:
+    time.sleep(refresh_rate)
+    st.rerun()
