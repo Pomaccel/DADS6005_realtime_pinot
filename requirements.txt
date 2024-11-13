@@ -2,3 +2,8 @@ streamlit
 plotly.express
 pinotdb
 pytz
+plotly.express
+plotly.graph_objects
+pandas
+datetime 
+time
