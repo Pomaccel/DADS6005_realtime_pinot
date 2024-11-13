@@ -8,6 +8,7 @@ import time
 # Code
 
 st.set_page_config(page_title="Gundam Views Dashboard", layout="wide")
+st.image("Cover2.jpg", use_container_width=True)
 st.title("📊 DADS6005 Realtime Dashboard : Mobile Suit Gundam")
 st.write("Explore the data visualizations below to see insights on Mobile Suit Gundam and trends over time.")
 
