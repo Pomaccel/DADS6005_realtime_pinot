@@ -205,7 +205,7 @@ FROM
     TP8_session
 GROUP BY 
     GENDER
-LIMIT 50000000000;
+LIMIT 1000000;
 """
 
 curs.execute(query4)
