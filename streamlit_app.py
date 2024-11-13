@@ -7,7 +7,7 @@ import time
 
 st.set_page_config(page_title="Gundam Views Dashboard", layout="wide")
 st.title("📊 DADS6005 Realtime Dashboard : Mobile Suit Gundam")
-st.write("Explore the data visualizations below to see insights on Mobile Suit Gundam and trends over time.")
+st.header("Explore the data visualizations below to see insights on Mobile Suit Gundam and trends over time.")
 
 # Connect to Pinot database
 conn = connect(host='54.255.188.63', port=8099, path='/query/sql', schema='http')
@@ -61,7 +61,7 @@ GROUP BY
     GUNDAM_NAME
 ORDER BY 
     visitor DESC
-LIMIT 50000000000;
+LIMIT 500;
 
 """
 curs.execute(query1)
@@ -103,7 +103,7 @@ FROM
     TP7_hopping
 GROUP BY
     GENDER, WINDOW_START_STR, WINDOW_END_STR
-LIMIT 50000000000;
+LIMIT 20000 ;
 """
 curs.execute(query2)
 df2 = pd.DataFrame(curs, columns=[item[0] for item in curs.description])
@@ -164,7 +164,7 @@ FROM
 GROUP BY
     GRADE, GENDER
 
-LIMIT 50000000000;
+LIMIT 10000 ;
 """
 curs.execute(query3)
 df_summary3 = pd.DataFrame(curs, columns=[item[0] for item in curs.description])
