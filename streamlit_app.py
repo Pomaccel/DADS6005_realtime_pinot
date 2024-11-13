@@ -4,7 +4,7 @@ from pinotdb import connect
 import plotly.express as px
 from datetime import datetime
 import time
-
+#version 1 
 
 st.set_page_config(page_title="Gundam Views Dashboard", layout="wide")
 st.title("📊 DADS6005 Realtime Dashboard : Mobile Suit Gundam")
