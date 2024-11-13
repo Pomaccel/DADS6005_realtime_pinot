@@ -2,6 +2,7 @@ import pandas as pd
 import streamlit as st
 from pinotdb import connect
 import plotly.express as px
+import plotly.graph_objects as go
 from datetime import datetime
 import time
 # Code
@@ -83,19 +84,23 @@ col3, col4 = st.columns(2)
 
 # Plot the first graph in the first column
 with col3:
-    fig1 = px.bar(df1, 
-                  x="visitor", 
-                  y="GUNDAM_NAME", 
-                  title=" Number of Visitor by each Gundum model", 
-                  orientation='h', 
-                  color='GENDER',
-                  hover_data={'visitor': True})
-    
-    fig1.update_traces(textposition='outside')
+    # Create a horizontal bar chart
+    fig1 = go.Figure(go.Bar(
+        x=df1['visitor'], 
+        y=df1['GUNDAM_NAME'], 
+        orientation='h',
+        marker=dict(color=df1['GENDER'].map({'Male': 'blue', 'Female': 'pink'})),
+        text=df1['visitor'],
+        textposition='outside',
+    ))
+
+    # Update the layout
     fig1.update_layout(
+        title="Number of Visitor by each Gundam model", 
         plot_bgcolor='rgba(0, 0, 0, 0)', 
         xaxis_title="Total Visits",             
-        yaxis_title=None
+        yaxis_title=None,
+        hovermode='closest'
     )
     st.header("🤖 Gundam Views by Name")
     st.plotly_chart(fig1, use_container_width=True)
@@ -141,22 +146,31 @@ timeperiods_last_5 = unique_timeperiods[-5:]
 result = result[result['TimePeriod'].isin(timeperiods_last_5)]
 
 with col4:
-    # Plot using 'result' dataframe instead of 'df2'
-    fig2 = px.bar(result,
-                   x="TimePeriod", 
-                   y="TOTAL_VIEW", 
-                   title="Tracking Total Visitor Every 1 Minute by Gender", 
-                   color='GENDER', 
-                   barmode='group')
-    
+# Create a bar chart using graph_objects
+    fig2 = go.Figure()
+
+# Add traces for each gender
+    for gender in result['GENDER'].unique():
+        gender_data = result[result['GENDER'] == gender]
+        fig2.add_trace(go.Bar(
+            x=gender_data['TimePeriod'], 
+            y=gender_data['TOTAL_VIEW'],
+            name=gender,
+            hoverinfo='x+y',
+        ))
+
+    # Update the layout
     fig2.update_layout(
+        title="Tracking Total Visitor Every 1 Minute by Gender", 
         plot_bgcolor='rgba(0, 0, 0, 0)', 
-        xaxis_title= "Time Period",              # Corrected axis title
-        yaxis_title="Number of Visitors",       # Corrected axis title
+        xaxis_title="Time Period", 
+        yaxis_title="Number of Visitors", 
         xaxis=dict(showgrid=False),       
         yaxis=dict(showgrid=False),
-        barmode='stack'
+        barmode='stack',  # Change to 'group' or 'stack' depending on preference
+        hovermode='closest'
     )
+
     st.header("👨‍👨‍👧‍👧 Total Views by Gender Over Time")
     st.plotly_chart(fig2, use_container_width=True)
 
@@ -186,21 +200,31 @@ fig = px.bar(df_summary3, x='GRADE', y='VISITOR', color='GENDER', barmode='group
              title="Visitors Grouped by Grade and Gender")
 
 with col5:
-    fig3 = px.bar(df_summary3, 
-                  x="GRADE", 
-                  y="VISITOR", 
-                  title="Number of Visits Every 5 Minute by GUNDAM Grade", 
-                  text_auto=True, 
-                  color='GENDER', 
-                  barmode='group')
-    
-    fig3.update_traces(textposition='outside')
+# Create a bar chart using graph_objects
+    fig3 = go.Figure()
+
+    # Add traces for each gender
+    for gender in df_summary3['GENDER'].unique():
+        gender_data = df_summary3[df_summary3['GENDER'] == gender]
+        fig3.add_trace(go.Bar(
+            x=gender_data['GRADE'], 
+            y=gender_data['VISITOR'],
+            name=gender,
+            text=gender_data['VISITOR'],
+            textposition='outside',
+            hoverinfo='x+y',  # Show both x (GRADE) and y (VISITOR) on hover
+        ))
+
+    # Update the layout
     fig3.update_layout(
+        title="Number of Visits Every 5 Minute by GUNDAM Grade", 
         plot_bgcolor='rgba(0, 0, 0, 0)', 
-        xaxis_title="Time Period",             
-        yaxis_title=None,  
+        xaxis_title="Time Period", 
+        yaxis_title=None, 
         xaxis=dict(showgrid=False),       
-        yaxis=dict(showgrid=False)                        
+        yaxis=dict(showgrid=False),
+        barmode='group',  # Use 'group' to display bars side by side
+        hovermode='closest'
     )
     st.header("⭐ Gundam Views by Grade")
     st.plotly_chart(fig3, use_container_width=True)
@@ -225,24 +249,32 @@ df_summary4 = pd.DataFrame(curs, columns=[item[0] for item in curs.description])
 
 # Plotting with Plotly
 with col6:
-    fig4 = px.bar(df_summary4,
-                x="GENDER",
-                y="AVG_SESSION_LENGTH_MIN",
-                title="Session Length vs Total Visitors by Gender",
-                labels={"TOTAL_VISITOR": "Total Visitors", "AVG_SESSION_LENGTH_MIN": "Average Session Length (min)"},
-                color='GENDER',
-                hover_data=["TOTAL_VISITOR"])  # Add TOTAL_VISITOR to hover data
+    # Create a bar chart using graph_objects
+    fig4 = go.Figure()
 
-    # Update traces to position text appropriately (e.g., 'inside' for text inside the bars)
-    fig4.update_traces(textposition='inside')
+    # Add traces for each gender
+    for gender in df_summary4['GENDER'].unique():
+        gender_data = df_summary4[df_summary4['GENDER'] == gender]
+        fig4.add_trace(go.Bar(
+            x=gender_data['GENDER'], 
+            y=gender_data['AVG_SESSION_LENGTH_MIN'],
+            name=gender,
+            text=gender_data['AVG_SESSION_LENGTH_MIN'],
+            textposition='inside',  # Position the text inside the bars
+            hoverinfo='x+y+text',   # Display x, y values and text (TOTAL_VISITOR)
+            marker=dict(color=gender_data['GENDER'].map({'Male': 'blue', 'Female': 'pink'})),  # Color by gender
+            hovertemplate='<b>Gender:</b> %{x}<br><b>Avg. Session Length:</b> %{y} minutes<br><b>Total Visitors:</b> %{text}'  # Custom hover template
+        ))
 
-    # Update layout for cleaner appearance
+    # Update the layout
     fig4.update_layout(
-        plot_bgcolor='rgba(0, 0, 0, 0)',
-        xaxis_title="Time Period",
-        yaxis_title=None,
-        xaxis=dict(showgrid=False),
-        yaxis=dict(showgrid=False)
+        title="Session Length vs Total Visitors by Gender", 
+        plot_bgcolor='rgba(0, 0, 0, 0)', 
+        xaxis_title="Time Period", 
+        yaxis_title="Average Session Length (min)",  # Y-axis title correction
+        xaxis=dict(showgrid=False),       
+        yaxis=dict(showgrid=False),
+        hovermode='closest'  # Show hover data for the closest bar
     )
     st.header("⚧ Gender Type by Grade")
     st.plotly_chart(fig4, use_container_width=True)
