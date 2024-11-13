@@ -105,7 +105,8 @@ with col3:
     fig1.update_layout(
         plot_bgcolor='rgba(0, 0, 0, 0)', 
         xaxis_title="Total Visits",             
-        yaxis_title=None
+        yaxis_title=None,
+        traceorder='normal'
     )
     st.header("🤖 Gundam Views by Name")
     st.plotly_chart(fig1, use_container_width=True)
@@ -167,7 +168,8 @@ with col4:
         yaxis_title="Number of Visitors",       # Corrected axis title
         xaxis=dict(showgrid=False),       
         yaxis=dict(showgrid=False),
-        barmode='stack'
+        barmode='stack',
+        traceorder='normal'
     )
     st.header("👨‍👨‍👧‍👧 Total Views by Gender Over Time")
     st.plotly_chart(fig2, use_container_width=True)
@@ -214,7 +216,8 @@ with col5:
         xaxis_title="Time Period",             
         yaxis_title=None,  
         xaxis=dict(showgrid=False),       
-        yaxis=dict(showgrid=False)                        
+        yaxis=dict(showgrid=False),
+        traceorder='normal'                        
     )
     st.header("⭐ Gundam Views by Grade")
     st.plotly_chart(fig3, use_container_width=True)
@@ -250,7 +253,7 @@ with col6:
                 category_orders={'GENDER': gender_order})  # Add TOTAL_VISITOR to hover data
 
     # Update traces to position text appropriately (e.g., 'inside' for text inside the bars)
-    fig4.update_traces(textposition='inside')
+    fig4.update_traces(textposition='inside',traceorder='normal')
 
     # Update layout for cleaner appearance
     fig4.update_layout(
@@ -258,7 +261,8 @@ with col6:
         xaxis_title="Time Period",
         yaxis_title=None,
         xaxis=dict(showgrid=False),
-        yaxis=dict(showgrid=False)
+        yaxis=dict(showgrid=False),
+        traceorder='normal'
     )
     st.header("⚧ Gender Type by Grade")
     st.plotly_chart(fig4, use_container_width=True)
