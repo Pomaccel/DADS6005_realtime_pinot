@@ -59,9 +59,9 @@ grade_filter = "'" + "', '".join(selected_grade) + "'"
 gender_filter = "'" + "', '".join(selected_genders) + "'"
 
 gender_color_map = {
-    'MALE': 'blue', 
-    'FEMALE': 'pink',
-    'OTHER': 'yellow'
+    'MALE'  :  'rgb(77,199,253)', 
+    'FEMALE': 'rgb(251,79,214)',
+    'OTHER' : 'rgb(241,187,89)'
 }
 
 
@@ -279,7 +279,7 @@ with col6:
             x=gender_data['GENDER'], 
             y=gender_data['AVG_SESSION_LENGTH_MIN'],
             name=gender,
-            text=gender_data['AVG_SESSION_LENGTH_MIN'],
+            text=gender_data['TOTAL_VISITOR'],
             textposition='inside',
             marker=dict(color=gender_color_map[gender]),  # Apply color map
             hoverinfo='x+y+text', 
