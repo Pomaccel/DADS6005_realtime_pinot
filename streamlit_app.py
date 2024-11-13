@@ -56,6 +56,12 @@ with col3:
 grade_filter = "'" + "', '".join(selected_grade) + "'"
 gender_filter = "'" + "', '".join(selected_genders) + "'"
 
+gender_color_map = {
+    'Male': 'blue',
+    'Female': 'pink',
+    'Other': 'green',
+}
+
 # Query 1: Top 10 Gundam Popular
 query1 = f"""
 SELECT
@@ -88,7 +94,8 @@ with col3:
                   title=" Number of Visitor by each Gundum model", 
                   orientation='h', 
                   color='GENDER',
-                  hover_data={'visitor': True})
+                  hover_data={'visitor': True},
+                  color_discrete_map=gender_color_map)
     
     fig1.update_traces(textposition='outside')
     fig1.update_layout(
@@ -146,7 +153,8 @@ with col4:
                    y="TOTAL_VIEW", 
                    title="Tracking Total Visitor Every 1 Minute by Gender", 
                    color='GENDER', 
-                   barmode='group')
+                   barmode='group',
+                   color_discrete_map=gender_color_map)
     
     fig2.update_layout(
         plot_bgcolor='rgba(0, 0, 0, 0)', 
@@ -191,7 +199,8 @@ with col5:
                   title="Number of Visits Every 5 Minute by GUNDAM Grade", 
                   text_auto=True, 
                   color='GENDER', 
-                  barmode='group')
+                  barmode='group',
+                  color_discrete_map=gender_color_map)
     
     fig3.update_traces(textposition='outside')
     fig3.update_layout(
@@ -230,7 +239,8 @@ with col6:
                 title="Session Length vs Total Visitors by Gender",
                 labels={"TOTAL_VISITOR": "Total Visitors", "AVG_SESSION_LENGTH_MIN": "Average Session Length (min)"},
                 color='GENDER',
-                hover_data=["TOTAL_VISITOR"])  # Add TOTAL_VISITOR to hover data
+                hover_data=["TOTAL_VISITOR"],
+                color_discrete_map=gender_color_map)  # Add TOTAL_VISITOR to hover data
 
     # Update traces to position text appropriately (e.g., 'inside' for text inside the bars)
     fig4.update_traces(textposition='inside')
